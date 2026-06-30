@@ -1,5 +1,5 @@
 // src/js/modules/auth.js
-import db from './supabase.js';
+import db, { isConfigured } from './supabase.js';
 
 const SESSION_KEY = 'ardoise_session';
 
@@ -10,17 +10,38 @@ async function sha256(str) {
 
 export async function login(name, password) {
   if (!name.trim()) throw new Error('Veuillez entrer votre prénom.');
+
+  // --- Vérification config Supabase ---
+  if (!isConfigured()) {
+    throw new Error(
+      '⚙️ Supabase non configuré. Ouvrez le fichier public/env.js et renseignez votre SUPABASE_URL et SUPABASE_ANON_KEY.'
+    );
+  }
+
   const hash = await sha256(password);
-  let storedHash;
+  let storedHash = null;
+
   try {
     storedHash = await db.getConfig('password_hash');
-  } catch {
-    // offline – check cache
+  } catch (e) {
+    // Réseau KO → fallback localStorage (mode offline)
     storedHash = localStorage.getItem('ardoise_pw_hash');
+    if (!storedHash) {
+      throw new Error(
+        '❌ Impossible de joindre Supabase. Vérifiez votre connexion et que le schéma SQL a bien été exécuté.'
+      );
+    }
   }
-  if (!storedHash) throw new Error('Impossible de vérifier le mot de passe (hors ligne ?).');
-  if (hash !== storedHash) throw new Error('Mot de passe incorrect.');
-  // Cache hash for offline use
+
+  if (!storedHash) {
+    throw new Error(
+      '❌ Aucun mot de passe trouvé dans la base. Avez-vous bien exécuté le fichier supabase/schema.sql ?'
+    );
+  }
+
+  if (hash !== storedHash) throw new Error('Mot de passe incorrect. Réessayez.');
+
+  // Mise en cache pour usage offline
   localStorage.setItem('ardoise_pw_hash', storedHash);
   sessionStorage.setItem(SESSION_KEY, JSON.stringify({ name: name.trim(), loggedAt: Date.now() }));
   return name.trim();
