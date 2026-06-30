@@ -1,11 +1,7 @@
 {
   "version": 2,
-  "builds": [
-    {
-      "src": "public/**",
-      "use": "@vercel/static"
-    }
-  ],
+  "buildCommand": "node build.js",
+  "outputDirectory": "public",
   "routes": [
     {
       "src": "/sw.js",
@@ -13,24 +9,16 @@
         "Cache-Control": "no-cache, no-store, must-revalidate",
         "Service-Worker-Allowed": "/"
       },
-      "dest": "/public/sw.js"
+      "dest": "/sw.js"
     },
     {
       "src": "/manifest.json",
       "headers": { "Content-Type": "application/manifest+json" },
-      "dest": "/public/manifest.json"
-    },
-    {
-      "src": "/src/(.*)",
-      "dest": "/public/src/$1"
-    },
-    {
-      "src": "/icons/(.*)",
-      "dest": "/public/icons/$1"
+      "dest": "/manifest.json"
     },
     {
       "src": "/(.*)",
-      "dest": "/public/index.html"
+      "dest": "/index.html"
     }
   ],
   "headers": [
@@ -38,8 +26,7 @@
       "source": "/(.*)",
       "headers": [
         { "key": "X-Content-Type-Options", "value": "nosniff" },
-        { "key": "X-Frame-Options", "value": "DENY" },
-        { "key": "Referrer-Policy", "value": "strict-origin-when-cross-origin" }
+        { "key": "X-Frame-Options", "value": "DENY" }
       ]
     }
   ]
