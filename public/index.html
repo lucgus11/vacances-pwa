@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="fr" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <meta name="theme-color" content="#f97316" />
+  <meta name="description" content="L'Ardoise des Vacances – votre compagnon de voyage familial" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+  <meta name="apple-mobile-web-app-title" content="Ardoise" />
+
+  <title>L'Ardoise des Vacances 🌴</title>
+
+  <link rel="manifest" href="/manifest.json" />
+  <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+  <link rel="icon" type="image/png" href="/icons/icon-192.png" />
+
+  <!-- Tailwind CSS CDN -->
+  <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          colors: {
+            sand:   { 50:'#fdf8f0', 100:'#fcefd8', 400:'#e8b96a', 600:'#c48a2a' },
+            ocean:  { 400:'#38bdf8', 600:'#0284c7', 800:'#075985' },
+            coral:  { 400:'#fb7185', 500:'#f43f5e' },
+          },
+          fontFamily: {
+            display: ['"Playfair Display"', 'Georgia', 'serif'],
+            body:    ['"Plus Jakarta Sans"', 'system-ui', 'sans-serif'],
+          }
+        }
+      }
+    }
+  </script>
+
+  <!-- Google Fonts -->
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700&family=Plus+Jakarta+Sans:wght@400;500;600&display=swap" rel="stylesheet" />
+
+  <link rel="stylesheet" href="/src/css/app.css" />
+</head>
+<body class="h-full bg-sand-50 font-body text-gray-800 overflow-x-hidden">
+
+<!-- ===== LOGIN SCREEN ===== -->
+<div id="screen-login" class="fixed inset-0 z-50 flex flex-col items-center justify-center bg-gradient-to-br from-orange-400 via-amber-400 to-yellow-300 p-6">
+  <div class="w-full max-w-sm bg-white/90 backdrop-blur rounded-3xl shadow-2xl p-8 text-center">
+    <div class="text-6xl mb-4">🌴</div>
+    <h1 class="font-display text-3xl font-bold text-gray-800 mb-1">L'Ardoise</h1>
+    <p class="text-sm text-gray-500 mb-6">des Vacances en Famille</p>
+
+    <div class="mb-4">
+      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1 text-left">Votre prénom</label>
+      <input id="login-name" type="text" placeholder="Ex : Marie" maxlength="20"
+        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+    </div>
+
+    <div class="mb-6">
+      <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1 text-left">Mot de passe famille</label>
+      <input id="login-password" type="password" placeholder="••••••••"
+        class="w-full border border-gray-200 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+    </div>
+
+    <button id="btn-login"
+      class="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold rounded-xl py-3 transition-all active:scale-95 shadow-lg shadow-orange-200">
+      Entrer dans l'Ardoise ✈️
+    </button>
+
+    <p id="login-error" class="mt-4 text-red-500 text-sm hidden">Mot de passe incorrect.</p>
+  </div>
+</div>
+
+<!-- ===== MAIN APP ===== -->
+<div id="app" class="hidden flex flex-col h-full">
+
+  <!-- Header -->
+  <header class="sticky top-0 z-30 bg-white/80 backdrop-blur border-b border-orange-100 px-4 py-3 flex items-center justify-between">
+    <div>
+      <h1 class="font-display text-xl font-bold text-gray-800">🌴 <span id="vacation-name">Vacances</span></h1>
+      <p class="text-xs text-gray-400">Bienvenue, <span id="header-username" class="font-semibold text-orange-500"></span></p>
+    </div>
+    <div class="flex gap-2">
+      <span id="offline-badge" class="hidden text-xs bg-amber-100 text-amber-700 px-2 py-1 rounded-full font-medium">📴 Hors ligne</span>
+      <button id="btn-settings" class="p-2 rounded-xl hover:bg-orange-50 transition-colors text-gray-500">⚙️</button>
+    </div>
+  </header>
+
+  <!-- Bottom Nav -->
+  <nav class="fixed bottom-0 left-0 right-0 z-30 bg-white border-t border-gray-100 flex">
+    <button class="nav-btn flex-1 flex flex-col items-center py-2 gap-0.5" data-tab="planning">
+      <span class="text-xl">📅</span><span class="text-[10px] font-medium">Planning</span>
+    </button>
+    <button class="nav-btn flex-1 flex flex-col items-center py-2 gap-0.5" data-tab="ideas">
+      <span class="text-xl">💡</span><span class="text-[10px] font-medium">Idées</span>
+    </button>
+    <button class="nav-btn flex-1 flex flex-col items-center py-2 gap-0.5" data-tab="tickets">
+      <span class="text-xl">🎫</span><span class="text-[10px] font-medium">Billets</span>
+    </button>
+    <button class="nav-btn flex-1 flex flex-col items-center py-2 gap-0.5" data-tab="photos">
+      <span class="text-xl">📸</span><span class="text-[10px] font-medium">Photos</span>
+    </button>
+  </nav>
+
+  <!-- Content -->
+  <main class="flex-1 overflow-y-auto pb-24 pt-2">
+
+    <!-- ===== TAB: PLANNING ===== -->
+    <section id="tab-planning" class="tab-content hidden px-4 pt-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-display text-xl font-bold text-gray-700">L'Ardoise 📋</h2>
+        <button id="btn-add-planning" class="bg-orange-500 text-white text-sm px-3 py-1.5 rounded-xl font-semibold active:scale-95 transition-all">+ Ajouter</button>
+      </div>
+
+      <!-- Date picker -->
+      <div class="flex gap-2 overflow-x-auto pb-2 mb-4 scrollbar-hide" id="date-strip"></div>
+
+      <!-- Moments -->
+      <div id="planning-board" class="space-y-4"></div>
+    </section>
+
+    <!-- ===== TAB: IDEAS ===== -->
+    <section id="tab-ideas" class="tab-content hidden px-4 pt-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-display text-xl font-bold text-gray-700">Anti-Indécision 💡</h2>
+        <button id="btn-add-idea" class="bg-orange-500 text-white text-sm px-3 py-1.5 rounded-xl font-semibold active:scale-95 transition-all">+ Idée</button>
+      </div>
+
+      <!-- Filter tabs -->
+      <div class="flex bg-gray-100 rounded-xl p-1 mb-4 gap-1">
+        <button class="idea-filter flex-1 py-1.5 text-sm font-semibold rounded-lg bg-white shadow transition-all" data-filter="all">Tout</button>
+        <button class="idea-filter flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all text-gray-500" data-filter="restaurant">🍴 Restos</button>
+        <button class="idea-filter flex-1 py-1.5 text-sm font-semibold rounded-lg transition-all text-gray-500" data-filter="activite">🎯 Activités</button>
+      </div>
+
+      <!-- Roulette CTA -->
+      <div class="bg-gradient-to-r from-orange-400 to-amber-400 rounded-2xl p-4 mb-4 flex items-center justify-between">
+        <div>
+          <p class="font-semibold text-white text-sm">On ne sait pas quoi faire ?</p>
+          <p class="text-white/80 text-xs">La roulette décide pour vous !</p>
+        </div>
+        <button id="btn-roulette" class="bg-white text-orange-500 font-bold text-sm px-4 py-2 rounded-xl active:scale-95 transition-all shadow">🎰 Roulette</button>
+      </div>
+
+      <div id="ideas-list" class="space-y-3"></div>
+    </section>
+
+    <!-- ===== TAB: TICKETS ===== -->
+    <section id="tab-tickets" class="tab-content hidden px-4 pt-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-display text-xl font-bold text-gray-700">Billets & QR 🎫</h2>
+        <label class="bg-orange-500 text-white text-sm px-3 py-1.5 rounded-xl font-semibold cursor-pointer active:scale-95 transition-all">
+          + Billet <input id="ticket-file-input" type="file" accept="image/*,.pdf" class="hidden" />
+        </label>
+      </div>
+      <p class="text-xs text-gray-400 mb-4 flex items-center gap-1">
+        <span>💾</span> Mis en cache pour fonctionner sans connexion
+      </p>
+      <div id="tickets-grid" class="grid grid-cols-2 gap-3"></div>
+    </section>
+
+    <!-- ===== TAB: PHOTOS ===== -->
+    <section id="tab-photos" class="tab-content hidden px-4 pt-2">
+      <div class="flex items-center justify-between mb-3">
+        <h2 class="font-display text-xl font-bold text-gray-700">Galerie 📸</h2>
+        <label class="bg-orange-500 text-white text-sm px-3 py-1.5 rounded-xl font-semibold cursor-pointer active:scale-95 transition-all">
+          + Photo <input id="photo-file-input" type="file" accept="image/*" multiple capture="environment" class="hidden" />
+        </label>
+      </div>
+      <div id="photos-grid" class="columns-2 gap-3 space-y-3"></div>
+    </section>
+
+  </main>
+</div>
+
+<!-- ===== MODALS ===== -->
+
+<!-- Planning Modal -->
+<div id="modal-planning" class="modal-overlay hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-slideup">
+    <h3 class="font-display text-xl font-bold mb-4" id="planning-modal-title">Ajouter au planning</h3>
+    <form id="form-planning" class="space-y-3">
+      <input name="title" type="text" placeholder="Titre (ex: Visite du château) *" required
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      <input name="date" type="date" required
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      <select name="moment" required
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 bg-white">
+        <option value="">-- Moment de la journée --</option>
+        <option value="matin">🌅 Matin</option>
+        <option value="apres-midi">☀️ Après-midi</option>
+        <option value="soiree">🌙 Soirée</option>
+      </select>
+      <textarea name="description" placeholder="Description (optionnel)" rows="2"
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"></textarea>
+      <input name="address" type="text" placeholder="Adresse → cliquable Google Maps (optionnel)"
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      <input type="hidden" name="id" />
+      <div class="flex gap-3 pt-2">
+        <button type="button" class="modal-close flex-1 border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-gray-600">Annuler</button>
+        <button type="submit" class="flex-1 bg-orange-500 text-white rounded-xl py-2.5 text-sm font-semibold active:scale-95 transition-all">Enregistrer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Idea Modal -->
+<div id="modal-idea" class="modal-overlay hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-slideup">
+    <h3 class="font-display text-xl font-bold mb-4">Proposer une idée</h3>
+    <form id="form-idea" class="space-y-3">
+      <div class="flex bg-gray-100 rounded-xl p-1 gap-1">
+        <label class="flex-1">
+          <input type="radio" name="type" value="restaurant" class="peer hidden" />
+          <span class="peer-checked:bg-white peer-checked:shadow block text-center py-1.5 text-sm font-semibold rounded-lg cursor-pointer transition-all text-gray-500 peer-checked:text-orange-500">🍴 Resto</span>
+        </label>
+        <label class="flex-1">
+          <input type="radio" name="type" value="activite" class="peer hidden" checked />
+          <span class="peer-checked:bg-white peer-checked:shadow block text-center py-1.5 text-sm font-semibold rounded-lg cursor-pointer transition-all text-gray-500 peer-checked:text-orange-500">🎯 Activité</span>
+        </label>
+      </div>
+      <input name="title" type="text" placeholder="Nom *" required
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      <textarea name="description" placeholder="Description (optionnel)" rows="2"
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"></textarea>
+      <input name="address" type="text" placeholder="Adresse (optionnel)"
+        class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      <div class="flex gap-3 pt-2">
+        <button type="button" class="modal-close flex-1 border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-gray-600">Annuler</button>
+        <button type="submit" class="flex-1 bg-orange-500 text-white rounded-xl py-2.5 text-sm font-semibold active:scale-95 transition-all">Proposer</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Ticket Modal (view) -->
+<div id="modal-ticket" class="modal-overlay hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+  <div class="relative w-full max-w-lg">
+    <button class="modal-close absolute -top-10 right-0 text-white text-2xl">✕</button>
+    <div id="ticket-viewer" class="bg-white rounded-2xl overflow-hidden shadow-2xl"></div>
+  </div>
+</div>
+
+<!-- Roulette Modal -->
+<div id="modal-roulette" class="modal-overlay hidden fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-sm rounded-3xl p-6 shadow-2xl text-center">
+    <h3 class="font-display text-2xl font-bold mb-2">🎰 La Roulette</h3>
+    <p class="text-sm text-gray-500 mb-6">Choisir parmi les idées non sélectionnées</p>
+    <div id="roulette-display" class="text-6xl mb-6 min-h-[80px] flex items-center justify-center">🎯</div>
+    <div id="roulette-result" class="font-bold text-xl text-gray-700 min-h-[2rem] mb-6"></div>
+    <div class="flex gap-3">
+      <button class="modal-close flex-1 border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-gray-600">Fermer</button>
+      <button id="btn-spin" class="flex-1 bg-orange-500 text-white rounded-xl py-2.5 text-sm font-bold active:scale-95 transition-all">Lancer !</button>
+    </div>
+  </div>
+</div>
+
+<!-- Settings Modal -->
+<div id="modal-settings" class="modal-overlay hidden fixed inset-0 z-50 flex items-end sm:items-center justify-center p-4 bg-black/40 backdrop-blur-sm">
+  <div class="bg-white w-full max-w-md rounded-3xl p-6 shadow-2xl animate-slideup">
+    <h3 class="font-display text-xl font-bold mb-4">⚙️ Paramètres</h3>
+    <div class="space-y-4">
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Nom des vacances</label>
+        <input id="settings-vacation-name" type="text"
+          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Nouveau mot de passe famille</label>
+        <input id="settings-new-password" type="password" placeholder="Laisser vide pour ne pas changer"
+          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      </div>
+      <div>
+        <label class="block text-xs font-semibold text-gray-600 uppercase tracking-wider mb-1">Confirmer le nouveau mot de passe</label>
+        <input id="settings-confirm-password" type="password"
+          class="w-full border border-gray-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+      </div>
+      <p id="settings-msg" class="text-sm text-center font-medium hidden"></p>
+      <div class="flex gap-3 pt-2">
+        <button class="modal-close flex-1 border border-gray-200 rounded-xl py-2.5 text-sm font-semibold text-gray-600">Fermer</button>
+        <button id="btn-save-settings" class="flex-1 bg-orange-500 text-white rounded-xl py-2.5 text-sm font-semibold active:scale-95 transition-all">Enregistrer</button>
+      </div>
+      <button id="btn-logout" class="w-full text-red-400 text-sm py-2 hover:text-red-600 transition-colors">Se déconnecter</button>
+    </div>
+  </div>
+</div>
+
+<!-- Toast -->
+<div id="toast" class="fixed top-4 left-1/2 -translate-x-1/2 z-[100] hidden">
+  <div id="toast-inner" class="bg-gray-800 text-white text-sm px-4 py-2.5 rounded-full shadow-xl font-medium"></div>
+</div>
+
+<!-- Config (à remplir avec vos clés Supabase) -->
+<script src="/env.js"></script>
+
+<!-- Scripts -->
+<script type="module" src="/src/js/app.js"></script>
+</body>
+</html>

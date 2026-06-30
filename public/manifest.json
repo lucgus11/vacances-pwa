@@ -1,0 +1,39 @@
+{
+  "name": "L'Ardoise des Vacances",
+  "short_name": "Ardoise",
+  "description": "Votre compagnon de voyage familial collaboratif",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#fdf8f0",
+  "theme_color": "#f97316",
+  "lang": "fr",
+  "categories": ["lifestyle", "travel"],
+  "icons": [
+    {
+      "src": "/icons/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ],
+  "screenshots": [],
+  "shortcuts": [
+    {
+      "name": "Planning",
+      "url": "/#planning",
+      "description": "Voir le planning du jour"
+    },
+    {
+      "name": "Billets",
+      "url": "/#tickets",
+      "description": "Accéder aux billets hors ligne"
+    }
+  ]
+}
