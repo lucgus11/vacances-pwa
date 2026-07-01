@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Diagnostic – Ardoise</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-50 p-6 font-mono text-sm">
+  <h1 class="text-xl font-bold mb-4">🔍 Page de diagnostic</h1>
+  <p class="text-gray-500 mb-6">Supprimez ce fichier après utilisation.</p>
+
+  <div class="mb-4">
+    <label class="block font-semibold mb-1">Mot de passe à tester :</label>
+    <input id="pw" type="text" value="test26" class="border rounded px-3 py-2 w-64" />
+    <button onclick="runDiag()" class="ml-2 bg-orange-500 text-white px-4 py-2 rounded font-bold">Tester</button>
+  </div>
+
+  <div id="results" class="space-y-2"></div>
+
+  <script src="/env.js"></script>
+  <script>
+    function log(label, value, ok) {
+      const div = document.createElement('div');
+      const color = ok === true ? 'bg-green-100 text-green-800' : ok === false ? 'bg-red-100 text-red-800' : 'bg-gray-100 text-gray-700';
+      div.className = `p-3 rounded ${color}`;
+      div.innerHTML = `<strong>${label}</strong><br><span class="break-all">${value}</span>`;
+      document.getElementById('results').appendChild(div);
+    }
+
+    async function sha256(str) {
+      const buf = await crypto.subtle.digest('SHA-256', new TextEncoder().encode(str));
+      return Array.from(new Uint8Array(buf)).map(b => b.toString(16).padStart(2,'0')).join('');
+    }
+
+    async function runDiag() {
+      document.getElementById('results').innerHTML = '';
+      const pw = document.getElementById('pw').value;
+
+      // 1. Vérifier ENV
+      const url = window.ENV?.SUPABASE_URL || '';
+      const key = window.ENV?.SUPABASE_ANON_KEY || '';
+      log('SUPABASE_URL', url || '❌ vide', !!url && url.startsWith('https://') && !url.includes('REMPLACER'));
+      log('SUPABASE_ANON_KEY', key ? key.slice(0,20) + '...' : '❌ vide', key.length > 20);
+
+      // 2. Hash du mot de passe saisi
+      const hash = await sha256(pw);
+      log(`SHA-256 de "${pw}" (longueur: ${hash.length})`, hash, hash.length === 64);
+
+      // 3. Requête Supabase
+      try {
+        const r = await fetch(`${url}/rest/v1/config?key=eq.password_hash&select=value`, {
+          headers: { 'apikey': key, 'Authorization': `Bearer ${key}` }
+        });
+        const data = await r.json();
+        log('Réponse Supabase (status ' + r.status + ')', JSON.stringify(data), r.ok);
+
+        if (data && data[0] && data[0].value) {
+          const stored = data[0].value;
+          log('Hash stocké en base (longueur: ' + stored.length + ')', stored, stored.length === 64);
+          log('Correspondance hash calculé vs stocké', hash === stored ? '✅ OUI — le mot de passe est correct !' : '❌ NON — les hash ne correspondent pas', hash === stored);
+
+          if (hash !== stored) {
+            log('💡 Solution', `Exécutez dans Supabase SQL Editor :<br>UPDATE config SET value = '${hash}' WHERE key = 'password_hash';`, null);
+          }
+        } else {
+          log('❌ Aucune donnée retournée', 'La table config est vide ou le RLS bloque encore.', false);
+        }
+      } catch (e) {
+        log('❌ Erreur réseau', e.message, false);
+      }
+
+      // 4. LocalStorage
+      const cached = localStorage.getItem('ardoise_pw_hash');
+      log('LocalStorage ardoise_pw_hash', cached || '(vide)', cached ? null : null);
+      if (cached && cached !== (await sha256(pw))) {
+        log('⚠️ Cache localStorage différent du hash calculé', 'Cliquez ici pour vider le cache : <button onclick="localStorage.removeItem(\'ardoise_pw_hash\');location.reload()" class="underline text-blue-600">Vider</button>', null);
+      }
+    }
+
+    // Lancer auto au chargement
+    window.onload = runDiag;
+  </script>
+</body>
+</html>
