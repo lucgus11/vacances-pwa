@@ -517,9 +517,18 @@ async function loadPhotos(user) {
   }
   photos.forEach(photo => {
     const item = document.createElement('div');
-    item.className = 'photo-item';
-    item.innerHTML = `<img src="${photo.file_url}" alt="${escHtml(photo.caption||'')}" loading="lazy" />`;
-    item.addEventListener('click', () => viewPhoto(photo));
+    item.className = 'photo-item relative group';
+    item.innerHTML = `
+      <img src="${photo.file_url}" alt="${escHtml(photo.caption||'')}" loading="lazy" class="w-full block rounded-xl" />
+      <div class="absolute inset-0 bg-black/0 group-hover:bg-black/20 transition-all rounded-xl"></div>
+      <button class="btn-delete-photo absolute top-2 right-2 bg-black/50 hover:bg-red-500 text-white text-xs rounded-full w-7 h-7 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-all" data-id="${photo.id}" title="Supprimer">🗑️</button>
+      ${photo.caption ? `<div class="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/60 to-transparent p-2 rounded-b-xl"><p class="text-white text-xs font-medium">${escHtml(photo.caption)}</p><p class="text-white/60 text-[10px]">par ${escHtml(photo.uploaded_by||'?')}</p></div>` : ''}
+    `;
+    item.querySelector('img').addEventListener('click', () => viewPhoto(photo));
+    item.querySelector('.btn-delete-photo').addEventListener('click', e => {
+      e.stopPropagation();
+      deletePhoto(photo.id);
+    });
     grid.appendChild(item);
   });
 }
@@ -559,16 +568,37 @@ async function handlePhotoFiles(files) {
   loadPhotos();
 }
 
+async function deletePhoto(id) {
+  if (!confirm('Supprimer cette photo ?')) return;
+  try {
+    await sbRemove('photos', id);
+    showToast('🗑️ Photo supprimée');
+    loadPhotos();
+  } catch(e) { showToast('❌ ' + e.message, 'red'); }
+}
+
 function viewPhoto(photo) {
   const overlay = document.createElement('div');
   overlay.className = 'fixed inset-0 z-[100] bg-black/90 flex items-center justify-center p-4';
   overlay.innerHTML = `<div class="relative max-w-lg w-full">
-    <button class="absolute -top-10 right-0 text-white text-2xl">✕</button>
+    <div class="absolute -top-12 left-0 right-0 flex items-center justify-between">
+      <button class="btn-delete-photo-modal bg-red-500/80 hover:bg-red-500 text-white text-xs px-3 py-1.5 rounded-full font-semibold transition-all">🗑️ Supprimer</button>
+      <button class="btn-close-photo text-white text-2xl">✕</button>
+    </div>
     <img src="${photo.file_url}" class="w-full rounded-2xl" />
     ${photo.caption ? `<p class="text-white text-center mt-3 font-semibold">${escHtml(photo.caption)}</p>` : ''}
     <p class="text-white/50 text-xs text-center mt-1">par ${escHtml(photo.uploaded_by||'?')}</p>
   </div>`;
-  overlay.querySelector('button').addEventListener('click', () => overlay.remove());
+  overlay.querySelector('.btn-close-photo').addEventListener('click', () => overlay.remove());
+  overlay.querySelector('.btn-delete-photo-modal').addEventListener('click', async () => {
+    if (!confirm('Supprimer cette photo définitivement ?')) return;
+    try {
+      await sbRemove('photos', photo.id);
+      overlay.remove();
+      showToast('🗑️ Photo supprimée');
+      loadPhotos();
+    } catch(e) { showToast('❌ ' + e.message, 'red'); }
+  });
   overlay.addEventListener('click', e => { if (e.target === overlay) overlay.remove(); });
   document.body.appendChild(overlay);
 }
